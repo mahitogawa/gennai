@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AIチャット｜デジタル庁 源内</title>
+<title>AIツール｜デジタル庁 源内</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -13,8 +13,6 @@
     display: flex;
     overflow: hidden;
   }
-
-  /* Sidebar */
   #sidebar {
     width: 220px;
     background: #fff;
@@ -24,10 +22,7 @@
     flex-shrink: 0;
     overflow-y: auto;
   }
-  #sidebar-logo {
-    padding: 16px 20px;
-    border-bottom: 1px solid #e5e7eb;
-  }
+  #sidebar-logo { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
   #sidebar-logo .title { font-size: 13px; color: #6b7280; margin-bottom: 2px; }
   #sidebar-logo .sub { font-size: 12px; color: #9ca3af; }
   #back-btn {
@@ -65,28 +60,19 @@
     font-family: inherit;
     transition: background 0.1s;
   }
-  .menu-btn:hover { background: #f9fafb; }
-  .menu-btn.active-blue {
-    background: #f0f9ff;
-    border-left-color: #3b82f6;
-    color: #1d4ed8;
+  .menu-btn:hover:not(.disabled) { background: #f9fafb; }
+  .menu-btn.active { background: #f0f9ff; border-left-color: #3b82f6; color: #1d4ed8; }
+  .menu-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+  .badge {
+    margin-left: auto;
+    font-size: 10px;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 1px 6px;
+    border-radius: 99px;
   }
-  .menu-btn.active-purple {
-    background: #fdf4ff;
-    border-left-color: #a855f7;
-    color: #7c3aed;
-  }
-  .menu-icon { font-size: 14px; }
-
-  /* Main */
-  #main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* Header */
+  .badge.soon { background: #f3f4f6; color: #9ca3af; }
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
   #header {
     background: #fff;
     border-bottom: 1px solid #e5e7eb;
@@ -95,9 +81,9 @@
     align-items: center;
     gap: 10px;
   }
-  #header .h-icon { font-size: 18px; }
-  #header .h-title { font-size: 16px; font-weight: 600; color: #111827; }
-  #header .h-sub { font-size: 12px; color: #9ca3af; }
+  #header-icon { font-size: 18px; }
+  #header-title { font-size: 16px; font-weight: 600; color: #111827; }
+  #header-sub { font-size: 12px; color: #9ca3af; }
   #status-badge {
     margin-left: auto;
     background: #dcfce7;
@@ -107,348 +93,354 @@
     font-size: 12px;
     font-weight: 600;
   }
+  .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .screen.active { display: flex; }
 
-  /* Messages */
+  /* CHAT */
   #messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    flex: 1; overflow-y: auto; padding: 24px;
+    display: flex; flex-direction: column; gap: 16px;
   }
   #messages::-webkit-scrollbar { width: 6px; }
   #messages::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
-
   #empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    color: #9ca3af;
-    gap: 12px;
-    padding: 40px 0;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; flex: 1; color: #9ca3af; gap: 12px; padding: 40px 0;
   }
   #empty-state .big-icon { font-size: 48px; }
   #empty-state .big-text { font-size: 16px; font-weight: 600; color: #6b7280; }
   #empty-state .small-text { font-size: 13px; }
-  #hints {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 16px;
-    max-width: 480px;
-    width: 100%;
-  }
+  #hints { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; max-width: 480px; width: 100%; }
   .hint-btn {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 13px;
-    color: #374151;
-    cursor: pointer;
-    text-align: left;
-    font-family: inherit;
-    transition: border-color 0.15s;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; color: #374151; cursor: pointer;
+    text-align: left; font-family: inherit; transition: border-color 0.15s;
   }
   .hint-btn:hover { border-color: #3b82f6; }
-
-  .msg-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
+  .msg-row { display: flex; align-items: flex-start; gap: 10px; }
   .msg-row.user { justify-content: flex-end; }
   .avatar {
-    width: 34px; height: 34px;
-    border-radius: 50%;
+    width: 34px; height: 34px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; flex-shrink: 0;
   }
   .avatar.ai { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
   .avatar.user { background: #f3f4f6; }
   .bubble {
-    max-width: 70%;
-    border-radius: 18px;
-    padding: 12px 16px;
-    font-size: 14px;
-    line-height: 1.7;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    white-space: pre-wrap;
-    word-break: break-word;
+    max-width: 70%; border-radius: 18px; padding: 12px 16px;
+    font-size: 14px; line-height: 1.7; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    white-space: pre-wrap; word-break: break-word;
   }
-  .bubble.ai {
-    background: #fff;
-    color: #111827;
-    border: 1px solid #e5e7eb;
-    border-radius: 18px 18px 18px 4px;
-  }
-  .bubble.user {
-    background: #3b82f6;
-    color: #fff;
-    border-radius: 18px 18px 4px 18px;
-  }
-
-  /* Typing */
+  .bubble.ai { background: #fff; color: #111827; border: 1px solid #e5e7eb; border-radius: 18px 18px 18px 4px; }
+  .bubble.user { background: #3b82f6; color: #fff; border-radius: 18px 18px 4px 18px; }
   .typing-dots { display: flex; gap: 6px; align-items: center; }
-  .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%; background: #9ca3af;
-    animation: bounce 1.2s infinite;
-  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; animation: bounce 1.2s infinite; }
   .dot:nth-child(2) { animation-delay: 0.2s; }
   .dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes bounce {
-    0%, 60%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-6px); }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+  #chat-input-area { background: #fff; border-top: 1px solid #e5e7eb; padding: 16px 24px; }
+  .input-box {
+    display: flex; gap: 10px; align-items: flex-end;
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 14px; padding: 10px 14px;
   }
+  .input-box textarea {
+    flex: 1; border: none; background: transparent; resize: none;
+    font-size: 14px; color: #111827; outline: none; font-family: inherit;
+    line-height: 1.6; max-height: 140px; overflow-y: auto; min-height: 24px;
+  }
+  .send-btn {
+    background: #e5e7eb; color: #9ca3af; border: none; border-radius: 10px;
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    cursor: default; font-size: 18px; transition: background 0.15s, color 0.15s;
+    flex-shrink: 0; font-family: inherit;
+  }
+  .send-btn.active { background: #3b82f6; color: #fff; cursor: pointer; }
+  .input-hint { font-size: 11px; color: #9ca3af; margin-top: 8px; text-align: center; }
 
-  /* Input */
-  #input-area {
-    background: #fff;
-    border-top: 1px solid #e5e7eb;
-    padding: 16px 24px;
+  /* TOOL SCREENS */
+  .tool-screen {
+    flex: 1; overflow-y: auto; padding: 32px;
+    display: flex; flex-direction: column; gap: 20px;
+    max-width: 800px; width: 100%; margin: 0 auto;
   }
-  #input-box {
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 10px 14px;
+  .tool-label { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .tool-textarea {
+    width: 100%; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 14px; font-size: 14px; font-family: inherit; color: #111827;
+    background: #fff; resize: vertical; outline: none; line-height: 1.7;
+    transition: border-color 0.15s;
   }
-  #user-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    resize: none;
-    font-size: 14px;
-    color: #111827;
-    outline: none;
-    font-family: inherit;
-    line-height: 1.6;
-    max-height: 140px;
-    overflow-y: auto;
-    min-height: 24px;
+  .tool-textarea:focus { border-color: #3b82f6; }
+  .tool-select {
+    width: 100%; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 12px 14px; font-size: 14px; font-family: inherit;
+    color: #111827; background: #fff; outline: none; cursor: pointer;
   }
-  #send-btn {
-    background: #e5e7eb;
-    color: #9ca3af;
-    border: none;
-    border-radius: 10px;
-    width: 38px; height: 38px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: default;
-    font-size: 18px;
-    transition: background 0.15s, color 0.15s;
-    flex-shrink: 0;
-    font-family: inherit;
+  .tool-btn {
+    background: #3b82f6; color: #fff; border: none; border-radius: 12px;
+    padding: 13px 28px; font-size: 14px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: background 0.15s; align-self: flex-start;
   }
-  #send-btn.active {
-    background: #3b82f6;
-    color: #fff;
-    cursor: pointer;
+  .tool-btn:hover { background: #2563eb; }
+  .tool-btn:disabled { background: #e5e7eb; color: #9ca3af; cursor: default; }
+  .result-box {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 20px; font-size: 14px; line-height: 1.8; color: #111827;
+    white-space: pre-wrap; word-break: break-word; min-height: 120px; position: relative;
   }
-  #input-hint {
-    font-size: 11px;
-    color: #9ca3af;
-    margin-top: 8px;
-    text-align: center;
+  .result-box.empty { color: #9ca3af; font-style: italic; }
+  .copy-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 4px 10px; font-size: 12px; cursor: pointer; font-family: inherit; color: #374151;
   }
+  .copy-btn:hover { background: #e5e7eb; }
+  .loading-bar {
+    height: 3px; background: linear-gradient(90deg,#3b82f6,#8b5cf6);
+    border-radius: 99px; animation: slide 1.2s infinite; display: none;
+  }
+  @keyframes slide { 0%{width:0%;margin-left:0} 50%{width:60%;margin-left:20%} 100%{width:0%;margin-left:100%} }
 </style>
 </head>
 <body>
 
-<!-- Sidebar -->
 <div id="sidebar">
   <div id="sidebar-logo">
     <div class="title">デジタル庁 源内</div>
     <div class="sub">made by 浦山学園</div>
   </div>
   <button id="back-btn">← メニューに戻る</button>
-
   <div class="section-label">デジタル庁源内</div>
-  <button class="menu-btn active-blue" onclick="setMenu(this,'blue')"><span class="menu-icon">💬</span>チャット</button>
-  <button class="menu-btn" onclick="setMenu(this,'blue')"><span class="menu-icon">📝</span>文章を生成</button>
-  <button class="menu-btn" onclick="setMenu(this,'blue')"><span class="menu-icon">🔤</span>翻訳</button>
-  <button class="menu-btn" onclick="setMenu(this,'blue')"><span class="menu-icon">🖼️</span>画像を生成</button>
-  <button class="menu-btn" onclick="setMenu(this,'blue')"><span class="menu-icon">📊</span>ダイアグラムを生成</button>
-  <button class="menu-btn" onclick="setMenu(this,'blue')"><span class="menu-icon">🎙️</span>文字起こし</button>
-  <button class="menu-btn" onclick="setMenu(this,'blue')"><span class="menu-icon">📚</span>行政実務用RAG</button>
-  <button class="menu-btn" onclick="setMenu(this,'blue')"><span class="menu-icon">⚖️</span>法令AI Lawsy</button>
-
-  <div class="section-label" style="margin-top:8px">浦山学園</div>
-  <button class="menu-btn" onclick="setMenu(this,'purple')"><span class="menu-icon">＜/＞</span>AIコーディング</button>
-  <button class="menu-btn" onclick="setMenu(this,'purple')"><span class="menu-icon">⚡</span>AIアプリ メーカー</button>
-  <button class="menu-btn" onclick="setMenu(this,'purple')"><span class="menu-icon">📖</span>AIで漫画作成</button>
+  <button class="menu-btn active" onclick="switchScreen('chat',this,'💬','チャット','着想や整理のための壁打ち')">
+    <span>💬</span>チャット<span class="badge">対応</span>
+  </button>
+  <button class="menu-btn" onclick="switchScreen('generate',this,'📝','文章を生成','手元の情報をもとに文章を作成')">
+    <span>📝</span>文章を生成<span class="badge">対応</span>
+  </button>
+  <button class="menu-btn" onclick="switchScreen('translate',this,'🔤','翻訳','手元の文章を他の言語に翻訳')">
+    <span>🔤</span>翻訳<span class="badge">対応</span>
+  </button>
+  <button class="menu-btn disabled"><span>🖼️</span>画像を生成<span class="badge soon">準備中</span></button>
+  <button class="menu-btn disabled"><span>📊</span>ダイアグラムを生成<span class="badge soon">準備中</span></button>
+  <button class="menu-btn disabled"><span>🎙️</span>文字起こし<span class="badge soon">準備中</span></button>
+  <button class="menu-btn disabled"><span>📚</span>行政実務用RAG<span class="badge soon">準備中</span></button>
+  <button class="menu-btn disabled"><span>⚖️</span>法令AI Lawsy<span class="badge soon">準備中</span></button>
 </div>
 
-<!-- Main -->
 <div id="main">
   <div id="header">
-    <span class="h-icon">💬</span>
+    <span id="header-icon">💬</span>
     <div>
-      <div class="h-title">チャット</div>
-      <div class="h-sub">着想や整理のための壁打ち</div>
+      <div id="header-title">チャット</div>
+      <div id="header-sub">着想や整理のための壁打ち</div>
     </div>
     <span id="status-badge">● オンライン</span>
   </div>
 
-  <div id="messages">
-    <div id="empty-state">
-      <div class="big-icon">🤖</div>
-      <div class="big-text">AIアシスタントと会話を始めましょう</div>
-      <div class="small-text">下のテキストボックスにメッセージを入力してください</div>
-      <div id="hints">
-        <button class="hint-btn" onclick="setHint(this)">今日の業務を整理したい</button>
-        <button class="hint-btn" onclick="setHint(this)">アイデアを壁打ちしたい</button>
-        <button class="hint-btn" onclick="setHint(this)">文章の添削をお願いしたい</button>
-        <button class="hint-btn" onclick="setHint(this)">わからないことを質問したい</button>
+  <!-- CHAT -->
+  <div class="screen active" id="screen-chat">
+    <div id="messages">
+      <div id="empty-state">
+        <div class="big-icon">💬</div>
+        <div class="big-text">AIアシスタントと会話を始めましょう</div>
+        <div class="small-text">下のテキストボックスにメッセージを入力してください</div>
+        <div id="hints">
+          <button class="hint-btn" onclick="setHint(this)">今日の業務を整理したい</button>
+          <button class="hint-btn" onclick="setHint(this)">アイデアを壁打ちしたい</button>
+          <button class="hint-btn" onclick="setHint(this)">文章の添削をお願いしたい</button>
+          <button class="hint-btn" onclick="setHint(this)">わからないことを質問したい</button>
+        </div>
+      </div>
+    </div>
+    <div id="chat-input-area">
+      <div class="input-box">
+        <textarea id="chat-input" rows="1" placeholder="メッセージを入力... (Enterで送信)"></textarea>
+        <button class="send-btn" id="chat-send" onclick="sendChat()">↑</button>
+      </div>
+      <div class="input-hint">Powered by Workers AI &nbsp;·&nbsp; Shift+Enterで改行</div>
+    </div>
+  </div>
+
+  <!-- GENERATE -->
+  <div class="screen" id="screen-generate">
+    <div class="tool-screen">
+      <div>
+        <div class="tool-label">📋 内容・キーワード・メモ</div>
+        <textarea class="tool-textarea" id="gen-input" rows="6" placeholder="例：新入社員向けのAI活用研修の案内メール。日時は6月1日13時、場所はオンライン、参加必須。"></textarea>
+      </div>
+      <div>
+        <div class="tool-label">📄 文章の種類</div>
+        <select class="tool-select" id="gen-type">
+          <option value="メール">ビジネスメール</option>
+          <option value="報告書">報告書・レポート</option>
+          <option value="お知らせ">お知らせ・案内文</option>
+          <option value="議事録">議事録</option>
+          <option value="提案書">提案書</option>
+          <option value="SNS投稿">SNS投稿文</option>
+          <option value="ブログ記事">ブログ記事</option>
+        </select>
+      </div>
+      <div class="loading-bar" id="gen-loading"></div>
+      <button class="tool-btn" id="gen-btn" onclick="runGenerate()">✨ 文章を生成する</button>
+      <div>
+        <div class="tool-label">📝 生成結果</div>
+        <div class="result-box empty" id="gen-result">ここに生成された文章が表示されます</div>
       </div>
     </div>
   </div>
 
-  <div id="input-area">
-    <div id="input-box">
-      <textarea id="user-input" rows="1" placeholder="メッセージを入力... (Enterで送信)"></textarea>
-      <button id="send-btn" onclick="sendMessage()">↑</button>
+  <!-- TRANSLATE -->
+  <div class="screen" id="screen-translate">
+    <div class="tool-screen">
+      <div>
+        <div class="tool-label">📝 翻訳する文章</div>
+        <textarea class="tool-textarea" id="trans-input" rows="7" placeholder="翻訳したい文章をここに入力してください..."></textarea>
+      </div>
+      <div>
+        <div class="tool-label">🌐 翻訳先の言語</div>
+        <select class="tool-select" id="trans-lang">
+          <option value="英語">英語（English）</option>
+          <option value="日本語">日本語</option>
+          <option value="中国語（簡体字）">中国語（簡体字）</option>
+          <option value="韓国語">韓国語</option>
+          <option value="フランス語">フランス語</option>
+          <option value="スペイン語">スペイン語</option>
+          <option value="ドイツ語">ドイツ語</option>
+          <option value="ポルトガル語">ポルトガル語</option>
+        </select>
+      </div>
+      <div class="loading-bar" id="trans-loading"></div>
+      <button class="tool-btn" id="trans-btn" onclick="runTranslate()">🔤 翻訳する</button>
+      <div>
+        <div class="tool-label">✅ 翻訳結果</div>
+        <div class="result-box empty" id="trans-result">ここに翻訳結果が表示されます</div>
+      </div>
     </div>
-    <div id="input-hint">Powered by Workers AI &nbsp;·&nbsp; Shift+Enterで改行</div>
   </div>
 </div>
 
 <script>
 const WORKER_URL = 'https://gennai.mahito-ai.workers.dev';
-const SYSTEM_PROMPT = 'あなたは親切で優秀なAIアシスタントです。日本語で丁寧に回答してください。';
-let history = [];
-let isLoading = false;
+const BASE_SYSTEM = 'あなたは親切で優秀なAIアシスタントです。必ず日本語のみで回答してください。英語では絶対に答えないでください。';
 
-const messagesEl = document.getElementById('messages');
-const inputEl = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
+function switchScreen(id, btn, icon, title, sub) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('header-icon').textContent = icon;
+  document.getElementById('header-title').textContent = title;
+  document.getElementById('header-sub').textContent = sub;
+}
+
+// CHAT
+let chatHistory = [], chatLoading = false;
+const chatInput = document.getElementById('chat-input');
+const chatSendBtn = document.getElementById('chat-send');
 
 function setHint(btn) {
-  inputEl.value = btn.textContent;
-  updateSendBtn();
-  inputEl.focus();
+  chatInput.value = btn.textContent;
+  updateChatBtn();
+  chatInput.focus();
 }
-
-function setMenu(btn, color) {
-  document.querySelectorAll('.menu-btn').forEach(b => {
-    b.classList.remove('active-blue', 'active-purple');
-  });
-  btn.classList.add(color === 'blue' ? 'active-blue' : 'active-purple');
-}
-
-inputEl.addEventListener('input', updateSendBtn);
-inputEl.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-  setTimeout(() => {
-    inputEl.style.height = 'auto';
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
-  }, 0);
+chatInput.addEventListener('input', updateChatBtn);
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  setTimeout(() => { chatInput.style.height = 'auto'; chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px'; }, 0);
 });
-
-function updateSendBtn() {
-  if (inputEl.value.trim() && !isLoading) {
-    sendBtn.classList.add('active');
-  } else {
-    sendBtn.classList.remove('active');
-  }
-}
-
-function scrollToBottom() {
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-function addMessage(role, content) {
-  const emptyState = document.getElementById('empty-state');
-  if (emptyState) emptyState.remove();
-
+function updateChatBtn() { chatSendBtn.classList.toggle('active', !!chatInput.value.trim() && !chatLoading); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function addMsg(role, content) {
+  const es = document.getElementById('empty-state');
+  if (es) es.remove();
   const row = document.createElement('div');
   row.className = 'msg-row ' + role;
-
-  if (role === 'assistant') {
-    row.innerHTML = `
-      <div class="avatar ai">🤖</div>
-      <div class="bubble ai">${escapeHtml(content)}</div>
-    `;
-  } else {
-    row.innerHTML = `
-      <div class="bubble user">${escapeHtml(content)}</div>
-      <div class="avatar user">👤</div>
-    `;
-  }
-
-  messagesEl.appendChild(row);
-  scrollToBottom();
+  row.innerHTML = role === 'assistant'
+    ? `<div class="avatar ai">🤖</div><div class="bubble ai">${esc(content)}</div>`
+    : `<div class="bubble user">${esc(content)}</div><div class="avatar user">👤</div>`;
+  document.getElementById('messages').appendChild(row);
+  document.getElementById('messages').scrollTop = 99999;
 }
-
 function addTyping() {
-  const emptyState = document.getElementById('empty-state');
-  if (emptyState) emptyState.remove();
-
+  const es = document.getElementById('empty-state'); if (es) es.remove();
   const row = document.createElement('div');
-  row.className = 'msg-row assistant';
-  row.id = 'typing-row';
-  row.innerHTML = `
-    <div class="avatar ai">🤖</div>
-    <div class="bubble ai"><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
-  `;
-  messagesEl.appendChild(row);
-  scrollToBottom();
+  row.className = 'msg-row assistant'; row.id = 'typing-row';
+  row.innerHTML = `<div class="avatar ai">🤖</div><div class="bubble ai"><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  document.getElementById('messages').appendChild(row);
+  document.getElementById('messages').scrollTop = 99999;
 }
+function removeTyping() { const t = document.getElementById('typing-row'); if (t) t.remove(); }
 
-function removeTyping() {
-  const t = document.getElementById('typing-row');
-  if (t) t.remove();
-}
-
-function escapeHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
-
-async function sendMessage() {
-  const text = inputEl.value.trim();
-  if (!text || isLoading) return;
-
-  inputEl.value = '';
-  inputEl.style.height = 'auto';
-  isLoading = true;
-  updateSendBtn();
-
-  history.push({ role: 'user', content: text });
-  addMessage('user', text);
-  addTyping();
-
+async function sendChat() {
+  const text = chatInput.value.trim();
+  if (!text || chatLoading) return;
+  chatInput.value = ''; chatInput.style.height = 'auto';
+  chatLoading = true; updateChatBtn();
+  chatHistory.push({ role: 'user', content: text });
+  addMsg('user', text); addTyping();
   try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system: SYSTEM_PROMPT,
-        messages: history,
-      }),
-    });
+    const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: BASE_SYSTEM, messages: chatHistory }) });
     const data = await res.json();
     const aiText = data.content?.[0]?.text || 'エラーが発生しました。';
-    history.push({ role: 'assistant', content: aiText });
-    removeTyping();
-    addMessage('assistant', aiText);
-  } catch (err) {
-    removeTyping();
-    addMessage('assistant', '通信エラーが発生しました。もう一度お試しください。');
-  } finally {
-    isLoading = false;
-    updateSendBtn();
-    inputEl.focus();
-  }
+    chatHistory.push({ role: 'assistant', content: aiText });
+    removeTyping(); addMsg('assistant', aiText);
+  } catch { removeTyping(); addMsg('assistant', '通信エラーが発生しました。'); }
+  finally { chatLoading = false; updateChatBtn(); chatInput.focus(); }
+}
+
+// GENERATE
+async function runGenerate() {
+  const input = document.getElementById('gen-input').value.trim();
+  const type = document.getElementById('gen-type').value;
+  if (!input) { alert('内容を入力してください'); return; }
+  const btn = document.getElementById('gen-btn');
+  const loading = document.getElementById('gen-loading');
+  const result = document.getElementById('gen-result');
+  btn.disabled = true; loading.style.display = 'block';
+  result.className = 'result-box empty'; result.innerHTML = '生成中...';
+  try {
+    const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: '優秀なライターです。指示された種類の文章を適切な形式と敬語で日本語のみで作成します。',
+        messages: [{ role: 'user', content: `以下の情報をもとに${type}を作成してください。\n\n${input}` }] }) });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'エラーが発生しました。';
+    result.className = 'result-box';
+    result.innerHTML = esc(text) + '<button class="copy-btn" onclick="copyText(\'gen-result\')">コピー</button>';
+  } catch { result.innerHTML = '通信エラーが発生しました。'; }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+}
+
+// TRANSLATE
+async function runTranslate() {
+  const input = document.getElementById('trans-input').value.trim();
+  const lang = document.getElementById('trans-lang').value;
+  if (!input) { alert('文章を入力してください'); return; }
+  const btn = document.getElementById('trans-btn');
+  const loading = document.getElementById('trans-loading');
+  const result = document.getElementById('trans-result');
+  btn.disabled = true; loading.style.display = 'block';
+  result.className = 'result-box empty'; result.innerHTML = '翻訳中...';
+  try {
+    const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: 'プロの翻訳者です。翻訳結果のみを出力します。説明や前置きは不要です。',
+        messages: [{ role: 'user', content: `以下を${lang}に翻訳してください。\n\n${input}` }] }) });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'エラーが発生しました。';
+    result.className = 'result-box';
+    result.innerHTML = esc(text) + '<button class="copy-btn" onclick="copyText(\'trans-result\')">コピー</button>';
+  } catch { result.innerHTML = '通信エラーが発生しました。'; }
+  finally { btn.disabled = false; loading.style.display = 'none'; }
+}
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  const btn = el.querySelector('.copy-btn');
+  const text = el.innerText.replace('コピー','').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✅ 完了';
+    setTimeout(() => btn.textContent = 'コピー', 2000);
+  });
 }
 </script>
 </body>
