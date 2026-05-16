@@ -333,7 +333,6 @@
     <button class="menu-btn"        id="sb-minutes"   onclick="go('minutes',this)">📋 議事録整形</button>
     <button class="menu-btn"        id="sb-prompt"    onclick="go('prompt',this)">🤖 プロンプト生成</button>
     <div class="section-label">準備中</div>
-    <button class="menu-btn disabled">🖼️ 画像を生成</button>
     <button class="menu-btn"        id="sb-image"    onclick="go('image',this)">🖼️ 画像を生成</button>
     <button class="menu-btn disabled">🎙️ 文字起こし</button>
     <button class="menu-btn disabled">📚 RAG検索</button>
@@ -652,6 +651,8 @@ async function runImage() {
     btn.disabled = false; loading.style.display = 'none';
   }
 }
+
+function goMenu() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-menu').classList.add('active');
   document.getElementById('tool-header').style.display = 'none';
