@@ -114,6 +114,80 @@
   .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
   .screen.active { display: flex; }
 
+  /* スマート入力 */
+  #smart-input-area {
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    padding: 20px 32px;
+    flex-shrink: 0;
+  }
+  #smart-input-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  #smart-input-label {
+    font-size: 13px;
+    color: var(--color-text-sub);
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  #smart-input-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid var(--color-primary);
+    border-radius: 99px;
+    padding: 10px 10px 10px 22px;
+    background: var(--color-bg);
+    box-shadow: 0 2px 12px rgba(0,23,193,0.10);
+    transition: box-shadow 0.15s;
+  }
+  #smart-input-box:focus-within {
+    box-shadow: 0 4px 20px rgba(0,23,193,0.18);
+  }
+  #smart-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--color-text);
+    background: transparent;
+  }
+  #smart-input::placeholder { color: var(--color-text-disabled); }
+  #smart-send {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: 99px;
+    padding: 9px 22px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #smart-send:hover { background: var(--color-primary-hover); }
+  #smart-send:disabled { background: var(--color-border); color: var(--color-text-disabled); cursor: default; }
+  #intent-badge {
+    display: none;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--color-primary);
+    font-weight: 600;
+    padding-left: 22px;
+  }
+  #intent-badge span {
+    background: var(--color-primary-light);
+    border: 1px solid var(--color-primary);
+    border-radius: 99px;
+    padding: 2px 12px;
+    margin-left: 6px;
+  }
+
   /* メニュー画面 */
   #screen-menu-inner { flex: 1; overflow-y: auto; padding: 28px; background: var(--color-bg-sub); }
   .menu-section-title {
@@ -278,38 +352,20 @@
   @keyframes slide { 0%{width:0%;margin-left:0} 50%{width:60%;margin-left:20%} 100%{width:0%;margin-left:100%} }
 
   /* 画像生成 */
-  .style-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-top: 6px;
-  }
+  .style-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 6px; }
   .style-item {
-    border: 1.5px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 8px 10px;
-    font-size: 13px;
-    cursor: pointer;
-    text-align: center;
-    background: var(--color-bg);
-    transition: all 0.15s;
-    font-family: inherit;
-    color: var(--color-text);
+    border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+    padding: 8px 6px; font-size: 12px; cursor: pointer; text-align: center;
+    background: var(--color-bg); transition: all 0.15s; font-family: inherit; color: var(--color-text);
   }
   .style-item:hover { border-color: var(--color-primary); background: var(--color-primary-light); }
   .style-item.selected { border-color: var(--color-primary); background: var(--color-primary); color: #fff; font-weight: 700; }
   .image-result-box {
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+    min-height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;
   }
   .image-result-box img { max-width: 100%; border-radius: var(--radius-md); display: block; }
-  .image-result-box .img-placeholder { color: var(--color-text-disabled); font-size: 14px; font-style: italic; }
+  .img-placeholder { color: var(--color-text-disabled); font-size: 14px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -332,8 +388,8 @@
     <button class="menu-btn"        id="sb-idea"      onclick="go('idea',this)">💡 アイデア出し</button>
     <button class="menu-btn"        id="sb-minutes"   onclick="go('minutes',this)">📋 議事録整形</button>
     <button class="menu-btn"        id="sb-prompt"    onclick="go('prompt',this)">🤖 プロンプト生成</button>
+    <button class="menu-btn"        id="sb-image"     onclick="go('image',this)">🖼️ 画像を生成</button>
     <div class="section-label">準備中</div>
-    <button class="menu-btn"        id="sb-image"    onclick="go('image',this)">🖼️ 画像を生成</button>
     <button class="menu-btn disabled">🎙️ 文字起こし</button>
     <button class="menu-btn disabled">📚 RAG検索</button>
     <button class="menu-btn disabled">⚖️ 法令AI Lawsy</button>
@@ -343,8 +399,21 @@
 
     <!-- メニュー画面 -->
     <div class="screen active" id="screen-menu" style="display:flex;flex-direction:column;">
+
+      <!-- スマート入力（Google風） -->
+      <div id="smart-input-area">
+        <div id="smart-input-wrap">
+          <div id="smart-input-label">🔍 なんでも話しかけてください — AIが自動で判断します</div>
+          <div id="smart-input-box">
+            <input type="text" id="smart-input" placeholder="例：「これ英語にして」「まとめて」「メール書いて」「アイデア出して」…">
+            <button id="smart-send" onclick="runSmart()">実行 →</button>
+          </div>
+          <div id="intent-badge"></div>
+        </div>
+      </div>
+
       <div id="screen-menu-inner">
-        <div class="menu-section-title">デジタル庁 源内メニュー</div>
+        <div class="menu-section-title">または機能を選んで使う</div>
         <div class="card-grid">
           <div class="card" onclick="go('chat',document.getElementById('sb-chat'))"><div class="card-title">💬 チャット</div><div class="card-desc">着想や整理のための壁打ち</div></div>
           <div class="card" onclick="go('generate',document.getElementById('sb-generate'))"><div class="card-title">📝 文章を生成</div><div class="card-desc">手元の情報をもとに文章を作成</div></div>
@@ -584,6 +653,132 @@
 <script>
 const WORKER_URL = 'https://gennai.mahito-ai.workers.dev';
 
+// ===== スマート入力（意図判定） =====
+const INTENT_SYSTEM = `あなたはユーザーの入力を分析して、適切なツールに振り分けるAIです。
+以下のツールがあります：
+- chat: 雑談・相談・壁打ち・会話
+- translate: 翻訳（「英語にして」「日本語に」「翻訳して」など）
+- summary: 要約（「まとめて」「短くして」「要点は？」など）
+- generate: 文章生成（「メールを書いて」「お知らせ作って」「文章にして」など）
+- proofread: 添削（「直して」「チェックして」「校正して」など）
+- qa: 質問・調査（「〜とは？」「教えて」「調べて」など）
+- idea: アイデア出し（「アイデア出して」「案を考えて」「ブレスト」など）
+- minutes: 議事録（「議事録にして」「会議メモを整形して」など）
+- prompt: プロンプト生成（「プロンプト作って」「AIへの指示を書いて」など）
+
+ユーザーの入力を分析して、必ずJSON形式のみで返してください。説明は不要です。
+{
+  "tool": "ツール名",
+  "input": "ツールに渡す本文（ユーザーの入力からツール指定部分を除いたもの）",
+  "confidence": "high/medium/low",
+  "reason": "判断理由（10文字以内）"
+}`;
+
+const smartInput = document.getElementById('smart-input');
+const smartSend = document.getElementById('smart-send');
+const intentBadge = document.getElementById('intent-badge');
+
+smartInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); runSmart(); }
+});
+
+const TOOL_LABELS = {
+  chat: '💬 チャット',
+  translate: '🔤 翻訳',
+  summary: '📄 要約',
+  generate: '📝 文章生成',
+  proofread: '✏️ 添削',
+  qa: '❓ Q&A',
+  idea: '💡 アイデア出し',
+  minutes: '📋 議事録整形',
+  prompt: '🤖 プロンプト生成',
+};
+
+async function runSmart() {
+  const text = smartInput.value.trim();
+  if (!text) return;
+
+  smartSend.disabled = true;
+  intentBadge.style.display = 'block';
+  intentBadge.innerHTML = '🔍 意図を判定中...';
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        system: INTENT_SYSTEM,
+        messages: [{role:'user', content: text}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '{}';
+
+    let intent;
+    try {
+      const clean = raw.replace(/```json|```/g,'').trim();
+      intent = JSON.parse(clean);
+    } catch { intent = { tool: 'chat', input: text }; }
+
+    const tool = intent.tool || 'chat';
+    const inputText = intent.input || text;
+    const label = TOOL_LABELS[tool] || tool;
+
+    intentBadge.innerHTML = `→ <span>${label}</span> として実行します`;
+
+    // 少し待ってから画面遷移・自動実行
+    await new Promise(r => setTimeout(r, 700));
+
+    const sideBtn = document.getElementById('sb-' + tool);
+    go(tool, sideBtn);
+    smartInput.value = '';
+    intentBadge.style.display = 'none';
+
+    // 各ツールに入力を流し込んで自動実行
+    await new Promise(r => setTimeout(r, 100));
+    autoFillAndRun(tool, inputText);
+
+  } catch {
+    intentBadge.innerHTML = '❌ エラーが発生しました';
+    setTimeout(() => { intentBadge.style.display = 'none'; }, 2000);
+  } finally {
+    smartSend.disabled = false;
+  }
+}
+
+function autoFillAndRun(tool, text) {
+  if (tool === 'chat') {
+    const chatInputEl = document.getElementById('chat-input');
+    chatInputEl.value = text;
+    updateChatBtn();
+    sendChat();
+  } else if (tool === 'translate') {
+    document.getElementById('trans-input').value = text;
+    runTool('trans');
+  } else if (tool === 'summary') {
+    document.getElementById('summary-input').value = text;
+    runTool('summary');
+  } else if (tool === 'generate') {
+    document.getElementById('gen-input').value = text;
+    runTool('gen');
+  } else if (tool === 'proofread') {
+    document.getElementById('proofread-input').value = text;
+    runTool('proofread');
+  } else if (tool === 'qa') {
+    document.getElementById('qa-input').value = text;
+    runTool('qa');
+  } else if (tool === 'idea') {
+    document.getElementById('idea-input').value = text;
+    runTool('idea');
+  } else if (tool === 'minutes') {
+    document.getElementById('minutes-input').value = text;
+    runTool('minutes');
+  } else if (tool === 'prompt') {
+    document.getElementById('prompt-input').value = text;
+    runTool('prompt');
+  }
+}
+
 const TOOLS = {
   chat:      { icon:'💬', title:'チャット',        sub:'着想や整理のための壁打ち' },
   generate:  { icon:'📝', title:'文章を生成',      sub:'手元の情報をもとに文章を作成' },
@@ -593,64 +788,8 @@ const TOOLS = {
   qa:        { icon:'❓', title:'Q&A',             sub:'質問に答える' },
   idea:      { icon:'💡', title:'アイデア出し',    sub:'ブレスト支援' },
   minutes:   { icon:'📋', title:'議事録整形',      sub:'メモ→議事録に変換' },
-  image:     { icon:'🖼️', title:'画像を生成',    sub:'テキストから画像を生成' },
-  prompt:    { icon:'🤖', title:'プロンプト生成',  sub:'AI用プロンプトを作る' },
+  image:     { icon:'🖼️', title:'画像を生成',    sub:'テキストから画像を生成（Stable Diffusion）' },
 };
-
-// 画像スタイル
-let selectedStyle = 'photographic';
-function selectStyle(btn, style) {
-  document.querySelectorAll('.style-item').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedStyle = style;
-}
-
-async function runImage() {
-  const inputEl = document.getElementById('image-input');
-  const text = inputEl.value.trim();
-  if (!text) { alert('画像の説明を入力してください'); return; }
-  const btn = document.getElementById('image-btn');
-  const loading = document.getElementById('image-loading');
-  const result = document.getElementById('image-result');
-  btn.disabled = true; loading.style.display = 'block';
-  result.innerHTML = '<span class="img-placeholder">生成中... しばらくお待ちください⏳</span>';
-
-  // 日本語→英語プロンプト変換してから画像生成
-  try {
-    // まずプロンプトを英語に変換
-    const transRes = await fetch(WORKER_URL, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        system: 'You are a translator. Translate Japanese image prompts to English for Stable Diffusion. Output only the translated prompt, nothing else.',
-        messages: [{role:'user', content:`Translate to English for image generation: ${text}`}]
-      })
-    });
-    const transData = await transRes.json();
-    const enPrompt = transData.content?.[0]?.text?.trim() || text;
-    const fullPrompt = `${selectedStyle} style, ${enPrompt}, high quality, detailed`;
-
-    // 画像生成
-    const imgRes = await fetch(WORKER_URL, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ type: 'image', prompt: fullPrompt })
-    });
-
-    if (!imgRes.ok) throw new Error('画像生成エラー');
-    const blob = await imgRes.blob();
-    const url = URL.createObjectURL(blob);
-    result.innerHTML = `
-      <div style="text-align:center;width:100%;padding:12px;">
-        <img src="${url}" alt="生成された画像" style="max-width:100%;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.12);">
-        <div style="margin-top:12px;">
-          <a href="${url}" download="generated.png" style="background:var(--color-primary);color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:700;">⬇️ ダウンロード</a>
-        </div>
-      </div>`;
-  } catch(e) {
-    result.innerHTML = '<span class="img-placeholder">エラーが発生しました。もう一度お試しください。</span>';
-  } finally {
-    btn.disabled = false; loading.style.display = 'none';
-  }
-}
 
 function goMenu() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -793,6 +932,50 @@ async function runTool(key) {
     result.innerHTML=esc(text)+`<button class="copy-btn" onclick="copyText('${c.resultId}')">コピー</button>`;
   } catch { result.innerHTML='通信エラーが発生しました。'; }
   finally { btn.disabled=false; loading.style.display='none'; }
+}
+
+// 画像生成
+let selectedStyle = 'photographic';
+function selectStyle(btn, style) {
+  document.querySelectorAll('.style-item').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedStyle = style;
+}
+
+async function runImage() {
+  const text = document.getElementById('image-input').value.trim();
+  if (!text) { alert('画像の説明を入力してください'); return; }
+  const btn = document.getElementById('image-btn');
+  const loading = document.getElementById('image-loading');
+  const result = document.getElementById('image-result');
+  btn.disabled = true; loading.style.display = 'block';
+  result.innerHTML = '<span class="img-placeholder">生成中... しばらくお待ちください ⏳</span>';
+  try {
+    const transRes = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        system:'You are a translator. Translate Japanese image prompts to English for Stable Diffusion. Output only the translated prompt, nothing else.',
+        messages:[{role:'user', content:`Translate to English for image generation: ${text}`}]
+      })
+    });
+    const transData = await transRes.json();
+    const enPrompt = transData.content?.[0]?.text?.trim() || text;
+    const fullPrompt = `${selectedStyle} style, ${enPrompt}, high quality, detailed`;
+    const imgRes = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ type:'image', prompt: fullPrompt })
+    });
+    if (!imgRes.ok) throw new Error('画像生成エラー');
+    const blob = await imgRes.blob();
+    const url = URL.createObjectURL(blob);
+    result.innerHTML = `<div style="text-align:center;width:100%;padding:12px;">
+      <img src="${url}" alt="生成された画像" style="max-width:100%;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.12);">
+      <div style="margin-top:12px;">
+        <a href="${url}" download="generated.png" style="background:var(--color-primary);color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:700;">⬇️ ダウンロード</a>
+      </div></div>`;
+  } catch {
+    result.innerHTML = '<span class="img-placeholder">エラーが発生しました。もう一度お試しください。</span>';
+  } finally { btn.disabled = false; loading.style.display = 'none'; }
 }
 
 function copyText(id) {
