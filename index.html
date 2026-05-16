@@ -276,6 +276,40 @@
     border-radius: 99px; animation: slide 1.2s infinite; display: none;
   }
   @keyframes slide { 0%{width:0%;margin-left:0} 50%{width:60%;margin-left:20%} 100%{width:0%;margin-left:100%} }
+
+  /* 画像生成 */
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .style-item {
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: center;
+    background: var(--color-bg);
+    transition: all 0.15s;
+    font-family: inherit;
+    color: var(--color-text);
+  }
+  .style-item:hover { border-color: var(--color-primary); background: var(--color-primary-light); }
+  .style-item.selected { border-color: var(--color-primary); background: var(--color-primary); color: #fff; font-weight: 700; }
+  .image-result-box {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .image-result-box img { max-width: 100%; border-radius: var(--radius-md); display: block; }
+  .image-result-box .img-placeholder { color: var(--color-text-disabled); font-size: 14px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -300,6 +334,7 @@
     <button class="menu-btn"        id="sb-prompt"    onclick="go('prompt',this)">🤖 プロンプト生成</button>
     <div class="section-label">準備中</div>
     <button class="menu-btn disabled">🖼️ 画像を生成</button>
+    <button class="menu-btn"        id="sb-image"    onclick="go('image',this)">🖼️ 画像を生成</button>
     <button class="menu-btn disabled">🎙️ 文字起こし</button>
     <button class="menu-btn disabled">📚 RAG検索</button>
     <button class="menu-btn disabled">⚖️ 法令AI Lawsy</button>
@@ -321,7 +356,7 @@
           <div class="card" onclick="go('idea',document.getElementById('sb-idea'))"><div class="card-title">💡 アイデア出し</div><div class="card-desc">ブレスト支援</div></div>
           <div class="card" onclick="go('minutes',document.getElementById('sb-minutes'))"><div class="card-title">📋 議事録整形</div><div class="card-desc">メモ→議事録に変換</div></div>
           <div class="card" onclick="go('prompt',document.getElementById('sb-prompt'))"><div class="card-title">🤖 プロンプト生成</div><div class="card-desc">AI用プロンプトを作る</div></div>
-          <div class="card card-disabled"><div class="card-title">🖼️ 画像を生成</div><div class="card-desc">テキストから画像を生成</div></div>
+          <div class="card" onclick="go('image',document.getElementById('sb-image'))"><div class="card-title">🖼️ 画像を生成</div><div class="card-desc">テキストから画像を生成</div></div>
           <div class="card card-disabled"><div class="card-title">🎙️ 文字起こし</div><div class="card-desc">音声ファイルからテキストに変換</div></div>
           <div class="card card-disabled"><div class="card-title">📚 RAG検索</div><div class="card-desc">ナレッジベースを検索してAIが回答</div></div>
         </div>
@@ -507,6 +542,43 @@
       </div>
     </div>
 
+    <!-- 画像を生成 -->
+    <div class="screen" id="screen-image">
+      <div class="tool-screen">
+        <div>
+          <label class="tool-label">✍️ 画像の説明（日本語でOK）</label>
+          <textarea class="tool-textarea" id="image-input" rows="3" placeholder="例：朝もやの中、湖畔に佇む一頭の鹿。水面に朝日が反射している"></textarea>
+        </div>
+        <div>
+          <label class="tool-label">🎨 スタイルを選択</label>
+          <div class="style-grid">
+            <button class="style-item selected" onclick="selectStyle(this,'photographic')">📷 写真風</button>
+            <button class="style-item" onclick="selectStyle(this,'anime')">🎌 アニメ</button>
+            <button class="style-item" onclick="selectStyle(this,'cinematic')">🎬 映画風</button>
+            <button class="style-item" onclick="selectStyle(this,'digital-art')">💻 デジタルアート</button>
+            <button class="style-item" onclick="selectStyle(this,'illustration')">🖼️ イラスト</button>
+            <button class="style-item" onclick="selectStyle(this,'watercolor')">🎨 水彩画</button>
+            <button class="style-item" onclick="selectStyle(this,'oil-painting')">🖌️ 油絵</button>
+            <button class="style-item" onclick="selectStyle(this,'pencil-sketch')">✏️ 鉛筆画</button>
+            <button class="style-item" onclick="selectStyle(this,'comic')">💥 コミック</button>
+            <button class="style-item" onclick="selectStyle(this,'3d-render')">🧊 3Dレンダー</button>
+            <button class="style-item" onclick="selectStyle(this,'pixel-art')">👾 ピクセルアート</button>
+            <button class="style-item" onclick="selectStyle(this,'minimalist')">⬜ ミニマル</button>
+            <button class="style-item" onclick="selectStyle(this,'pop-art')">🎯 ポップアート</button>
+            <button class="style-item" onclick="selectStyle(this,'ukiyo-e')">🗻 浮世絵</button>
+          </div>
+        </div>
+        <div class="loading-bar" id="image-loading"></div>
+        <button class="tool-btn" id="image-btn" onclick="runImage()">🖼️ 画像を生成する</button>
+        <div>
+          <label class="tool-label">✅ 生成された画像</label>
+          <div class="image-result-box" id="image-result">
+            <span class="img-placeholder">ここに生成された画像が表示されます</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -522,10 +594,64 @@ const TOOLS = {
   qa:        { icon:'❓', title:'Q&A',             sub:'質問に答える' },
   idea:      { icon:'💡', title:'アイデア出し',    sub:'ブレスト支援' },
   minutes:   { icon:'📋', title:'議事録整形',      sub:'メモ→議事録に変換' },
+  image:     { icon:'🖼️', title:'画像を生成',    sub:'テキストから画像を生成' },
   prompt:    { icon:'🤖', title:'プロンプト生成',  sub:'AI用プロンプトを作る' },
 };
 
-function goMenu() {
+// 画像スタイル
+let selectedStyle = 'photographic';
+function selectStyle(btn, style) {
+  document.querySelectorAll('.style-item').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedStyle = style;
+}
+
+async function runImage() {
+  const inputEl = document.getElementById('image-input');
+  const text = inputEl.value.trim();
+  if (!text) { alert('画像の説明を入力してください'); return; }
+  const btn = document.getElementById('image-btn');
+  const loading = document.getElementById('image-loading');
+  const result = document.getElementById('image-result');
+  btn.disabled = true; loading.style.display = 'block';
+  result.innerHTML = '<span class="img-placeholder">生成中... しばらくお待ちください⏳</span>';
+
+  // 日本語→英語プロンプト変換してから画像生成
+  try {
+    // まずプロンプトを英語に変換
+    const transRes = await fetch(WORKER_URL, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        system: 'You are a translator. Translate Japanese image prompts to English for Stable Diffusion. Output only the translated prompt, nothing else.',
+        messages: [{role:'user', content:`Translate to English for image generation: ${text}`}]
+      })
+    });
+    const transData = await transRes.json();
+    const enPrompt = transData.content?.[0]?.text?.trim() || text;
+    const fullPrompt = `${selectedStyle} style, ${enPrompt}, high quality, detailed`;
+
+    // 画像生成
+    const imgRes = await fetch(WORKER_URL, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ type: 'image', prompt: fullPrompt })
+    });
+
+    if (!imgRes.ok) throw new Error('画像生成エラー');
+    const blob = await imgRes.blob();
+    const url = URL.createObjectURL(blob);
+    result.innerHTML = `
+      <div style="text-align:center;width:100%;padding:12px;">
+        <img src="${url}" alt="生成された画像" style="max-width:100%;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.12);">
+        <div style="margin-top:12px;">
+          <a href="${url}" download="generated.png" style="background:var(--color-primary);color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:700;">⬇️ ダウンロード</a>
+        </div>
+      </div>`;
+  } catch(e) {
+    result.innerHTML = '<span class="img-placeholder">エラーが発生しました。もう一度お試しください。</span>';
+  } finally {
+    btn.disabled = false; loading.style.display = 'none';
+  }
+}
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-menu').classList.add('active');
   document.getElementById('tool-header').style.display = 'none';
