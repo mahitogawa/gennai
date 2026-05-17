@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>デジタル庁 源内</title>
 <style>
   :root {
@@ -26,6 +27,7 @@
     background: var(--color-bg-sub);
     color: var(--color-text);
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -366,13 +368,48 @@
   }
   .image-result-box img { max-width: 100%; border-radius: var(--radius-md); display: block; }
   .img-placeholder { color: var(--color-text-disabled); font-size: 14px; font-style: italic; }
+
+  /* Safe area */
+  #top-header { padding-top: calc(12px + env(safe-area-inset-top)); }
+  #chat-input-area { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+
+  /* モバイル用オーバーレイ */
+  #sb-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 98;
+  }
+  #sb-overlay.show { display: block; }
+  #hamburger {
+    display: none; background: none; border: none;
+    color: #fff; font-size: 22px; padding: 0 10px 0 0; cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    #hamburger { display: block; }
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 99; width: 260px;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease-out;
+    }
+    #sidebar.open { transform: translateX(0); }
+    .card-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .style-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    #smart-input-area { padding: 12px 14px; }
+    .tool-screen { padding: 16px; }
+    #screen-menu-inner { padding: 16px; }
+    #hints { grid-template-columns: 1fr; }
+    .bubble { max-width: 85%; }
+  }
 </style>
 </head>
 <body>
 
 <div id="top-header">
+  <button id="hamburger" onclick="toggleSidebar()">☰</button>
   <span class="app-title">デジタル庁 源内</span>
 </div>
+<div id="sb-overlay" onclick="closeSidebar()"></div>
 
 <div id="body">
   <!-- サイドバー -->
@@ -653,6 +690,15 @@
 <script>
 const WORKER_URL = 'https://gennai.mahito-ai.workers.dev';
 
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sb-overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('show');
+}
+
 // ===== スマート入力（意図判定） =====
 const INTENT_SYSTEM = `あなたはユーザーの入力を分析して、適切なツールに振り分けるAIです。
 以下のツールがあります：
@@ -796,9 +842,11 @@ function goMenu() {
   document.getElementById('screen-menu').classList.add('active');
   document.getElementById('tool-header').style.display = 'none';
   document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+  if (window.innerWidth <= 768) closeSidebar();
 }
 
 function go(id, sideBtn) {
+  if (window.innerWidth <= 768) closeSidebar();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
   const t = TOOLS[id];
